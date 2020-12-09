@@ -17,26 +17,37 @@ public class AI : MonoBehaviour {
     public Material[] materials;
     public NavMeshAgent navMeshAgent;
 
+
+    //private array of all the game objects it patrols and flees to
     private GameObject[] FleePoints;
     private GameObject[] patrollingPoints;
     private int bullets;
+
+    //index of the point you want to start patrolling
     private int searchingPoint = 0;
+
+    //meshrenderer, basically in charge of changing material or colour
     private MeshRenderer mr;
     private Animator animator;
     private GameObject player;
 
     private void Awake()
     {
+        // will know the player
         player = GameObject.Find("Player");
         animator = gameObject.GetComponent<Animator>();
         navMeshAgent = gameObject.GetComponent<NavMeshAgent>();
+        //fills its ammunition
         ChargeBullets();
+        //fills the array with points it uses as patrol points and flee points
         patrollingPoints = GameObject.FindGameObjectsWithTag("PatrolPoint");
         FleePoints = GameObject.FindGameObjectsWithTag("FleePoint");
     }
 
     // Update is called once per frame
     void FixedUpdate () {
+
+        //every fixedupdate we set the boolean values of the animator based on the following
         animator.SetBool("IsPlayerVisible", IsPlayerVisible());
         animator.SetBool("IsPlayerClose", IsPlayerClose());
         animator.SetBool("IsPlayerDetectable", IsPlayerDetectable());
@@ -54,6 +65,7 @@ public class AI : MonoBehaviour {
         return false;
     }
 
+    // if you can see the player, and the player is close enough, it returns true otherwise it returns false;
     public bool IsPlayerAttackable()
     {
         if (IsPlayerVisible())
@@ -63,10 +75,12 @@ public class AI : MonoBehaviour {
         return false;
     }
 
+    //returns the distance of the player from this object
     public float PlayerDistance() {
 		return Vector3.Magnitude (player.transform.position - transform.position);
 	}
 
+    //sets the current material of the object to the specified index
 	public void SetMaterial(int index) {
 		if (mr == null) {
 			mr = GetComponent<MeshRenderer> ();
@@ -75,10 +89,12 @@ public class AI : MonoBehaviour {
 	}
 
 	public void SetNextPoint() {
+        //picks a random number between the 0th index and the last index of the patrolling point array
 		searchingPoint = Random.Range(0, patrollingPoints.GetLength(0));
         if(navMeshAgent == null) {
             navMeshAgent = gameObject.GetComponent<NavMeshAgent>();
         }
+        //set the next patrol point to this value
         navMeshAgent.SetDestination(patrollingPoints[searchingPoint].transform.position);
         navMeshAgent.stoppingDistance = 0f;
 	}
@@ -87,6 +103,7 @@ public class AI : MonoBehaviour {
         navMeshAgent.SetDestination(player.transform.position);
     }
 
+    //returns the difference between this agents destination and its transform, and say how far apart it is
 	public bool	IsOnPoint() {
 		Vector3 diff = navMeshAgent.destination - transform.position;
 		diff.y = 0f;
@@ -95,9 +112,12 @@ public class AI : MonoBehaviour {
 
 	public bool IsPlayerVisible() {
 		RaycastHit hit;
+        //gets the direction from this object to the player
 		Vector3 direction = player.transform.position - transform.position;
         direction.y = 0; // make it horizontal
         direction = Vector3.Normalize(direction);
+
+        // send a raycast out from this 
         if (Physics.Raycast (transform.position, direction, out hit, 100f)) {
             if (hit.transform.tag == "Player") {
                 return true;
@@ -106,6 +126,8 @@ public class AI : MonoBehaviour {
 		return false;
 	}
 
+
+    //Debug to draw the lines
     public void ShowAngleLines() {
         Vector3 limit1 = Vector3.Slerp(transform.forward, transform.right, visionAngle / 180);
         Vector3 limit2 = Vector3.Slerp(transform.forward, -transform.right, visionAngle / 180);
@@ -116,19 +138,21 @@ public class AI : MonoBehaviour {
     public void ShowDestinationLine() {
         Debug.DrawRay(transform.position, navMeshAgent.destination - transform.position, Color.green);
     }
-
+    //checks if the player is in the vision cone
     public bool IsPlayerInAngle(){
         return Vector3.Angle(transform.forward, player.transform.position - transform.position) <= visionAngle / 2f;
     }
-
+    //checks if the player is close enough to chase
     public bool IsPlayerClose() {
         return PlayerDistance() < chaseDistance;
     }
 
+    //loads the bullets
     public void ChargeBullets () {
         bullets = totalBullets;
     }
 
+    //fires a bullet at the player
     public void Shoot() {
         transform.LookAt(player.transform);
         Instantiate(bulletGO, transform.position + transform.forward, Quaternion.identity);
@@ -137,15 +161,17 @@ public class AI : MonoBehaviour {
         }
     }
 
+    //makes the navmesh stop at its current position
     public void Stop() {
         navMeshAgent.stoppingDistance = 0f;
         navMeshAgent.SetDestination(this.transform.position);
     }
-
+    //checks if its out of bullets
     public bool isEmpty() {
         return bullets <= 0;
     }
 
+    //picks the farthest point as its flee destination
     public void SetFarDestination() {
         NavMeshPath pathE = new NavMeshPath();
         NavMeshPath pathP = new NavMeshPath();
@@ -172,10 +198,11 @@ public class AI : MonoBehaviour {
         //navMeshAgent.SetDestination(transform.position + direction);
     }
 
+    //rotates the object
     public void TurnAround() {
         transform.Rotate(new Vector3(0, 2f, 0));
     }
-
+    //figure out what this does
     public float PathLength(NavMeshPath path)
     {
         if (path.corners.Length < 2)
