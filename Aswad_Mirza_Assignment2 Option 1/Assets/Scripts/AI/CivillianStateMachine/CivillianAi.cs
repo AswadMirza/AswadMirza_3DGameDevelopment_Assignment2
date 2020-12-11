@@ -23,8 +23,13 @@ public class CivillianAi : MonoBehaviour
     public int ammoCap = 5;
     public GameObject bullet;
 
-    public Transform[] patrolTargets;
-    public Transform[] fleeTargets;
+    //public Transform[] patrolTargets;
+    //public Transform[] fleeTargets;
+
+    public GameObject[] patrolTargets;
+    public GameObject[] fleeTargets;
+
+    //private GameObject wayPoints;
 
     public GameObject player;
     public float speed = 0.1f;
@@ -55,6 +60,9 @@ public class CivillianAi : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         nmAgent = GetComponent<NavMeshAgent>();
+
+        patrolTargets = GameObject.FindGameObjectsWithTag("AIPoint");
+        fleeTargets = GameObject.FindGameObjectsWithTag("AIPoint");
     }
 
 
@@ -68,6 +76,9 @@ public class CivillianAi : MonoBehaviour
     {
         
     }
+
+    // if you want to make this have more options, make it pick a random point in the array and have it go there
+    /*
     public void GetNextPatrolTarget()
     {
         switch (patrolTargetIndex)
@@ -83,7 +94,17 @@ public class CivillianAi : MonoBehaviour
         nmAgent.SetDestination(PatrolTarget.position);
         OnTarget = false;
     }
+    */
 
+    public void GetNextPatrolTarget()
+    {
+
+        patrolTargetIndex = Random.Range(0, patrolTargets.Length);
+
+        PatrolTarget = patrolTargets[patrolTargetIndex].transform;
+        nmAgent.SetDestination(PatrolTarget.position);
+        OnTarget = false;
+    }
     public bool IsPlayerVisible()
     {
         RaycastHit hit;
@@ -148,6 +169,8 @@ public class CivillianAi : MonoBehaviour
     }
 
     //Makes the object run away
+
+    /*
     public void Flee()
     {
         //goes through the list of flee targets, and compares them, and picks the farthest point from its current position, and make it run to that
@@ -156,7 +179,16 @@ public class CivillianAi : MonoBehaviour
                 Vector3.Distance(transform.position, i.position) > Vector3.Distance(transform.position, j.position)
                     ? i : j).position);
     }
+    */
 
+    public void Flee()
+    {
+        //goes through the list of flee targets, and compares them, and picks the farthest point from its current position, and make it run to that
+        nmAgent.SetDestination(
+            fleeTargets.Aggregate((i, j) =>
+                Vector3.Distance(transform.position, i.transform.position) > Vector3.Distance(transform.position, j.transform.position)
+                    ? i : j).transform.position);
+    }
     public void ClearNav()
     {
         nmAgent.ResetPath();
