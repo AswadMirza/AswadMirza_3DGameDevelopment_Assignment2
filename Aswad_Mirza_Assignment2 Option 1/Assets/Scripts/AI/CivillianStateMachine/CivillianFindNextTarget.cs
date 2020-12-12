@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-//Aswad Mirza, 991445135 Exercise 4
+//Aswad Mirza, 991445135 Exercise 4, edited for Assignment 2
 //Based On Code from example 4 in week 9 
 public class CivillianFindNextTarget : StateMachineBehaviour
 {

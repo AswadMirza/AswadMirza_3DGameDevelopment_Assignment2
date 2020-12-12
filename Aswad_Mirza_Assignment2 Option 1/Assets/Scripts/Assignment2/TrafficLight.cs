@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+
+//Aswad Mirza 991445135, Assignment 2
 public enum TrafficLightStates { 
     RED,
     YELLOW,
